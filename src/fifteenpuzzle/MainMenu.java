@@ -46,6 +46,8 @@ public class MainMenu implements ActionListener
 	private static final int RADIO_BUTTON_WIDTH = 250;
 	private static final int RADIO_BUTTON_HEIGHT = 75;
 
+	// Test comment
+
 	private JFrame frame;
 	private JPanel menuPane;
 	private SyncObject sync;
