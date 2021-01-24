@@ -14,7 +14,8 @@ public class Settings
 	public static int INSPECTION_TIME = 7000; // Time (in milliseconds) for user to inspect puzzle before starting
 	public static final int STEP_SIZE = 20; // Number of pixels a tile should move at a time
 
-	public static final String HOME_DIR = System.getProperty("user.home") + "\\AppData\\Roaming\\Fifteen Puzzle"; // Directory in which game data (including icons) are stored
+	public static final String HOME_DIR =
+			System.getProperty("user.home") + "\\AppData\\Roaming\\Fifteen Puzzle"; // Directory in which game data (including icons) are stored
 	public static final String ASSET_DIR = HOME_DIR + "\\Assets";
 
 	// GUI icons
@@ -24,7 +25,8 @@ public class Settings
 	public static final String getTilePath(int value, boolean isDark)
 	{
 		String color = isDark ? "Dark" : "Light";
-		return HOME_DIR + "\\resources\\" + STYLE.name + "\\" + color + "\\" + Integer.toString(value) + ".png";
+		return ASSET_DIR + "\\" + STYLE.name + "\\" + color + "\\"
+				+ Integer.toString(value) + ".png";
 	}
 
 	public static Appearance STYLE = Appearance.WOOD; // Style of the tiles and board
