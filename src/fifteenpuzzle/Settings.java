@@ -15,10 +15,11 @@ public class Settings
 	public static final int STEP_SIZE = 20; // Number of pixels a tile should move at a time
 
 	public static final String HOME_DIR = System.getProperty("user.home") + "\\AppData\\Roaming\\Fifteen Puzzle"; // Directory in which game data (including icons) are stored
+	public static final String ASSET_DIR = HOME_DIR + "\\Assets";
 
 	// GUI icons
-	public static final String BUTTON_DIR = HOME_DIR + "\\Assets\\Buttons";
-	public static final String RADIO_BUTTON_DIR = HOME_DIR + "\\Assets\\Radio Buttons";
+	public static final String BUTTON_DIR = ASSET_DIR + "\\Buttons";
+	public static final String RADIO_BUTTON_DIR = ASSET_DIR + "\\Radio Buttons";
 
 	public static final String getTilePath(int value, boolean isDark)
 	{

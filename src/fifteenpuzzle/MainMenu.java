@@ -15,6 +15,7 @@ import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -64,29 +65,93 @@ public class MainMenu implements ActionListener
 		{
 			public void run()
 			{
-				// Set up GUI
+				initializeDirectory();
 				mm.createAndShowGUI();
-
-				// Get the app data folder
-				if (!new File(Settings.HOME_DIR).exists())
-				{
-					String msg = "This app uses the " + Settings.HOME_DIR
-							+ "\nfolder to store solve results and GUI components. You may choose\nnot to create the directory, but your solves would not be saved.";
-					String[] options = new String[] { "Create directory", "Don't create" };
-					int choice = JOptionPane.showOptionDialog(null, msg, "Directory creation", JOptionPane.YES_NO_OPTION,
-							JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
-					if (choice == JOptionPane.NO_OPTION)
-						Settings.SAVE_SOLVES = false;
-					else
-					{
-						boolean success = new File(Settings.HOME_DIR).mkdir();
-						if (!success)
-							JOptionPane.showMessageDialog(null, "An unexpected error occurred and the directory could not be created",
-									"Directory creation error", JOptionPane.ERROR_MESSAGE);
-					}
-				}
 			}
 		});
+	}
+
+	/**
+	 * Checks if the AppData\Fifteen Puzzle\Assets directory exists. If not, asks
+	 * the user if they would like to create one and moves the Assets folder to
+	 * AppData\Fifteen Puzzle.
+	 */
+	private static void initializeDirectory()
+	{
+		if (!new File(Settings.ASSET_DIR).exists())
+		{
+			String msg = "This app uses the " + Settings.HOME_DIR
+					+ "\nfolder to store solve results and GUI components. If you choose"
+					+ "\nnot to create the directory, your solves will not be saved";
+			String[] options = new String[] { "Create directory", "Don't create" };
+			int choice = JOptionPane.showOptionDialog(null, msg, "Directory creation",
+					JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null,
+					options, options[0]);
+
+			// User chooses to create directory
+			if (choice == JOptionPane.YES_OPTION)
+			{
+				// Make directory
+				boolean success = new File(Settings.HOME_DIR).mkdir();
+				if (!success)
+				{
+					JOptionPane.showMessageDialog(null,
+							"An unexpected error occurred and the directory could not be created",
+							"Directory creation error", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+
+				// Move assets to AppData/Fifteen Puzzle directory
+				File currentDir = new File(System.getProperty("user.dir"));
+				for (File f : currentDir.listFiles())
+				{
+					if (isAssetsFolder(f))
+					{
+						success = f.renameTo(new File(Settings.ASSET_DIR));
+						if (!success)
+							JOptionPane.showMessageDialog(null,
+									"An unexpected error occurred and the Assets folder could not be moved",
+									"Error", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
+				}
+
+				// Assets folder not found: ask user for location
+				msg = "The Assets folder was not found in " + currentDir.getAbsolutePath()
+						+ "\nWould you like to choose a folder to move to AppData\\Fifteen Puzzle?";
+				options = new String[] { "Choose folder", "Skip" };
+				choice = JOptionPane.showOptionDialog(null, msg,
+						"Assets folder not found", JOptionPane.YES_NO_OPTION,
+						JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+				if (choice == JOptionPane.YES_OPTION)
+				{
+					JFileChooser fc = new JFileChooser();
+					choice = fc.showDialog(null, "Use as Assets");
+					File assetsFolder = fc.getSelectedFile();
+					if (choice == JFileChooser.APPROVE_OPTION && assetsFolder.exists())
+					{
+						success = assetsFolder.renameTo(new File(Settings.ASSET_DIR));
+						if (!success)
+							JOptionPane.showMessageDialog(null,
+									"An unexpected error occurred and the Assets folder could not be moved",
+									"Error", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
+					else
+						return;
+				}
+				else
+					return;
+			}
+			// User chooses NOT to create directory
+			else
+				Settings.SAVE_SOLVES = false;
+		}
+	}
+
+	private static boolean isAssetsFolder(File f)
+	{
+		return f.getName().equals("Assets");
 	}
 
 	/**
@@ -116,7 +181,8 @@ public class MainMenu implements ActionListener
 		topPane.setOpaque(true);
 		topPane.setBackground(TOP_PANE_COLOR);
 		topPane.setLayout(new BoxLayout(topPane, BoxLayout.PAGE_AXIS));
-		topPane.setPreferredSize(new Dimension(frame.getWidth(), (int) (frame.getHeight() * TOP_PANE_HEIGHT)));
+		topPane.setPreferredSize(new Dimension(frame.getWidth(),
+				(int) (frame.getHeight() * TOP_PANE_HEIGHT)));
 		menuPane.add(topPane, BorderLayout.NORTH);
 
 		topPane.add(Box.createVerticalGlue());
@@ -150,19 +216,23 @@ public class MainMenu implements ActionListener
 		buttonPane.add(Box.createVerticalGlue());
 		buttonPane.add(Box.createVerticalGlue());
 
-		buttonPane.add(makeButton("Start", BUTTON_WIDTH, BUTTON_HEIGHT, this, NORMAL_FONT));
+		buttonPane
+				.add(makeButton("Start", BUTTON_WIDTH, BUTTON_HEIGHT, this, NORMAL_FONT));
 
 		buttonPane.add(Box.createVerticalGlue());
 
-		buttonPane.add(makeButton("Statistics", BUTTON_WIDTH, BUTTON_HEIGHT, this, NORMAL_FONT));
+		buttonPane.add(
+				makeButton("Statistics", BUTTON_WIDTH, BUTTON_HEIGHT, this, NORMAL_FONT));
 
 		buttonPane.add(Box.createVerticalGlue());
 
-		buttonPane.add(makeButton("Settings", BUTTON_WIDTH, BUTTON_HEIGHT, this, NORMAL_FONT));
+		buttonPane.add(
+				makeButton("Settings", BUTTON_WIDTH, BUTTON_HEIGHT, this, NORMAL_FONT));
 
 		buttonPane.add(Box.createVerticalGlue());
 
-		buttonPane.add(makeButton("Quit", BUTTON_WIDTH, BUTTON_HEIGHT, this, NORMAL_FONT));
+		buttonPane
+				.add(makeButton("Quit", BUTTON_WIDTH, BUTTON_HEIGHT, this, NORMAL_FONT));
 
 		buttonPane.add(Box.createVerticalGlue());
 		buttonPane.add(Box.createVerticalGlue());
@@ -184,11 +254,13 @@ public class MainMenu implements ActionListener
 
 		ButtonGroup gameModes = new ButtonGroup();
 
-		freeMode = makeRadioButton("Freeplay", true, RADIO_BUTTON_WIDTH, RADIO_BUTTON_HEIGHT, NORMAL_FONT);
+		freeMode = makeRadioButton("Freeplay", true, RADIO_BUTTON_WIDTH,
+				RADIO_BUTTON_HEIGHT, NORMAL_FONT);
 		gameModes.add(freeMode);
 		botRight.add(freeMode);
 
-		timedMode = makeRadioButton("Timed", false, RADIO_BUTTON_WIDTH, RADIO_BUTTON_HEIGHT, NORMAL_FONT);
+		timedMode = makeRadioButton("Timed", false, RADIO_BUTTON_WIDTH,
+				RADIO_BUTTON_HEIGHT, NORMAL_FONT);
 		gameModes.add(timedMode);
 		botRight.add(timedMode);
 
@@ -207,7 +279,8 @@ public class MainMenu implements ActionListener
 		dimSpinnerPane.setOpaque(false);
 		botRight.add(dimSpinnerPane);
 
-		rowSpinner = new JSpinner(new SpinnerNumberModel(4, Settings.MIN_ROWS, Settings.MAX_ROWS, 1));
+		rowSpinner = new JSpinner(
+				new SpinnerNumberModel(4, Settings.MIN_ROWS, Settings.MAX_ROWS, 1));
 		rowSpinner.setFont(NORMAL_FONT);
 		dimSpinnerPane.add(rowSpinner);
 		JLabel temp = new JLabel("X");
@@ -215,7 +288,8 @@ public class MainMenu implements ActionListener
 		temp.setVerticalAlignment(JLabel.CENTER);
 		temp.setFont(NORMAL_FONT);
 		dimSpinnerPane.add(temp);
-		colSpinner = new JSpinner(new SpinnerNumberModel(4, Settings.MIN_COLS, Settings.MAX_COLS, 1));
+		colSpinner = new JSpinner(
+				new SpinnerNumberModel(4, Settings.MIN_COLS, Settings.MAX_COLS, 1));
 		colSpinner.setFont(NORMAL_FONT);
 		dimSpinnerPane.add(colSpinner);
 
@@ -224,25 +298,29 @@ public class MainMenu implements ActionListener
 		frame.revalidate();
 	}
 
-	public static JButton makeButton(String name, int width, int height, ActionListener listener, Font backupFont)
+	public static JButton makeButton(String name, int width, int height,
+			ActionListener listener, Font backupFont)
 	{
 		JButton button = new JButton();
 		String iconPath = Settings.BUTTON_DIR + "\\" + name;
 		if (new File(iconPath + ".png").exists())
 		{
-			Image img = new ImageIcon(iconPath + ".png").getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
+			Image img = new ImageIcon(iconPath + ".png").getImage()
+					.getScaledInstance(width, height, Image.SCALE_SMOOTH);
 			button.setIcon(new ImageIcon(img));
 
 			String rolloverIconPath = iconPath + "_Rollover.png";
 			if (new File(rolloverIconPath).exists())
 			{
-				Image rolloverImg = new ImageIcon(rolloverIconPath).getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
+				Image rolloverImg = new ImageIcon(rolloverIconPath).getImage()
+						.getScaledInstance(width, height, Image.SCALE_SMOOTH);
 				button.setRolloverIcon(new ImageIcon(rolloverImg));
 
 				String pressedIconPath = iconPath + "_Pressed.png";
 				if (new File(pressedIconPath).exists())
 				{
-					Image pressedImg = new ImageIcon(pressedIconPath).getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
+					Image pressedImg = new ImageIcon(pressedIconPath).getImage()
+							.getScaledInstance(width, height, Image.SCALE_SMOOTH);
 					button.setPressedIcon(new ImageIcon(pressedImg));
 				}
 			}
@@ -266,18 +344,22 @@ public class MainMenu implements ActionListener
 		return button;
 	}
 
-	public static JRadioButton makeRadioButton(String name, boolean isSelected, int width, int height, Font backupFont)
+	public static JRadioButton makeRadioButton(String name, boolean isSelected, int width,
+			int height, Font backupFont)
 	{
 		JRadioButton button = new JRadioButton();
 
-		String notSelectedPath = Settings.RADIO_BUTTON_DIR + "\\" + name + "_NotSelected.png";
+		String notSelectedPath =
+				Settings.RADIO_BUTTON_DIR + "\\" + name + "_NotSelected.png";
 		String selectedPath = Settings.RADIO_BUTTON_DIR + "\\" + name + "_Selected.png";
 		if (new File(notSelectedPath).exists() && new File(selectedPath).exists())
 		{
-			Image notSelectedImg = new ImageIcon(notSelectedPath).getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
+			Image notSelectedImg = new ImageIcon(notSelectedPath).getImage()
+					.getScaledInstance(width, height, Image.SCALE_SMOOTH);
 			button.setIcon(new ImageIcon(notSelectedImg));
 
-			Image selectedImg = new ImageIcon(selectedPath).getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
+			Image selectedImg = new ImageIcon(selectedPath).getImage()
+					.getScaledInstance(width, height, Image.SCALE_SMOOTH);
 			button.setSelectedIcon(new ImageIcon(selectedImg));
 		}
 		else
@@ -307,7 +389,8 @@ public class MainMenu implements ActionListener
 				frame.repaint();
 
 				int[] dim = getDimensions();
-				TimedSession currentSession = new TimedSession(dim[0], dim[1], frame, sync);
+				TimedSession currentSession =
+						new TimedSession(dim[0], dim[1], frame, sync);
 
 				try
 				{
